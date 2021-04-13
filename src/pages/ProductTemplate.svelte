@@ -11,7 +11,7 @@
 </script>
 
 <svelte:head>
-  <title>{!product ? "Single Product" : product.title.to}</title>
+  <title>{!product ? "Single Product" : product.title}</title>
 </svelte:head>
 
 {#if !product}
