@@ -9,6 +9,9 @@
 
   // Components
   import Navbar from "./components/Navbar/Navbar.svelte";
+  import Sidebar from "./components/Navbar/Sidebar.svelte";
+
+  import globalStore from "./stores/globalStore.js";
 
   // Router
   import { Router, Route, Link } from "svelte-routing";
@@ -16,6 +19,9 @@
 
 <Router>
   <Navbar />
+  {#if $globalStore.sidebar}
+    <Sidebar />
+  {/if}
   <!-- <nav class="navbar">
     <Link to="/">Home</Link>
     <Link to="/about">About</Link>
