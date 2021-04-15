@@ -2,7 +2,8 @@
   import { onMount } from "svelte";
   import { navigate, link } from "svelte-routing";
   import user from "../stores/user";
-  import { cartTotal } from "../stores/cart";
+  import cart, { cartTotal } from "../stores/cart";
+  import submitOrder from "../strapi/submitOrder";
 
   let name = "";
 
@@ -14,11 +15,42 @@
   onMount(() => {
     if (!$user.jwt) {
       navigate("/");
+      return;
+    }
+    if ($cartTotal > 0) {
+      stripe = Stripe(
+        "pk_test_51IgMdfIzz2BMs86eCXp6E3XuPhvVWwvkmK1fJMbn39dOAsbzn9eGB8L1HaQT8fb1W43a8iOa9BWvWVH0pbpPFRwm00vz90o8ES"
+      );
+      elements = stripe.elements();
+      card = elements.create("card");
+      card.mount(cardElement);
+      card.addEventListener("change", (event) => {
+        if (event.error) {
+          cardErrors.textContent = event.error.message;
+        } else {
+          cardErrors.textContent = "";
+        }
+      });
     }
   });
 
-  function handleSubmit() {
-    console.log("form submitted");
+  async function handleSubmit() {
+    let response = await stripe
+      .createToken(card)
+      .catch((error) => console.log(error));
+    const { token } = response;
+    if (token) {
+      const { id } = token;
+      let order = await submitOrder({
+        name,
+        total: $cartTotal,
+        items: $cart,
+        stripeTokenId: id,
+        userToken: $user.jwt,
+      });
+      console.log("Order", order);
+    } else {
+    }
   }
 </script>
 
