@@ -3,6 +3,7 @@
   import { link } from "svelte-routing";
   // logout func
   import globalStore from "../stores/globalStore";
+  import { logoutUser } from "../stores/user";
 </script>
 
 {#if $user.jwt}
@@ -10,6 +11,7 @@
     href="/"
     class="logout-btn"
     on:click={() => {
+      logoutUser();
       globalStore.toggleItem("sidebar", false);
     }}>logout</a
   >
