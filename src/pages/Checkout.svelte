@@ -4,13 +4,14 @@
   import user from "../stores/user";
   import cart, { cartTotal } from "../stores/cart";
   import submitOrder from "../strapi/submitOrder";
+  import globalStore from "../stores/globalStore";
 
   let name = "";
 
   // stripe vars
   let cardElement, cardErrors, card, stripe, elements;
 
-  $: isEmpty = !name;
+  $: isEmpty = !name || $globalStore.alert;
 
   onMount(() => {
     if (!$user.jwt) {
@@ -19,7 +20,7 @@
     }
     if ($cartTotal > 0) {
       stripe = Stripe(
-        "pk_test_51IgMdfIzz2BMs86eCXp6E3XuPhvVWwvkmK1fJMbn39dOAsbzn9eGB8L1HaQT8fb1W43a8iOa9BWvWVH0pbpPFRwm00vz90o8ES"
+        "pk_test_51IgMemCi4C31tLogm0LHhbcDaOAtAq08STjp8mXyiKBu0Zk7jCSPHfBpQCzCQvkNqo4YtZzykTl4KVuj4EmC9RP700X30wEOLh"
       );
       elements = stripe.elements();
       card = elements.create("card");
@@ -35,6 +36,7 @@
   });
 
   async function handleSubmit() {
+    globalStore.toggleItem("alert", true, "submitting order... please wait!");
     let response = await stripe
       .createToken(card)
       .catch((error) => console.log(error));
@@ -48,7 +50,20 @@
         stripeTokenId: id,
         userToken: $user.jwt,
       });
-      console.log("Order", order);
+      if (order) {
+        globalStore.toggleItem("alert", true, "your order is complete!");
+        cart.set([]);
+        localStorage.setItem("cart", JSON.stringify([]));
+        navigate("/");
+        return;
+      } else {
+        globalStore.toggleItem(
+          "alert",
+          true,
+          "there was an error with your order. please try again",
+          true
+        );
+      }
     } else {
     }
   }
@@ -90,7 +105,7 @@
   </section>
 {:else}
   <div class="checkout-empty">
-    <h2>your cart is empoty</h2>
+    <h2>your cart is empty</h2>
     <a href="/products" use:link class="btn btn-primary">fill it</a>
   </div>
 {/if}

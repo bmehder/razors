@@ -1,7 +1,7 @@
 import axios from "axios";
 import url from "./URL";
 
-async function submitOrder(name, total, items, stripeTokenId, userToken) {
+async function submitOrder({ name, total, items, stripeTokenId, userToken }) {
   const response = await axios
     .post(
       `${url}/orders`,
